@@ -3,7 +3,9 @@
 	"package": "dev.lunabytes.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
-		"ExampleMixin"
+		"ExampleMixin",
+		"FoodDataMixin",
+		"EatingHealMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
