@@ -1,5 +1,6 @@
 package dev.lunabytes;
 
+import dev.lunabytes.food.FoodItems;
 import net.fabricmc.api.ModInitializer;
 
 import net.minecraft.resources.Identifier;
@@ -21,7 +22,8 @@ public class Lunabytes implements ModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 
-		LOGGER.info("Hello Fabric world!");
+		FoodItems.registerAll();
+		LOGGER.info("Lunabytes Matcha Flavored Food & Armor: registered {} food items", FoodItems.all().size());
 	}
 
 	public static Identifier id(String path) {
