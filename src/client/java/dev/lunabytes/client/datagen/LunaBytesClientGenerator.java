@@ -1,16 +1,14 @@
-package dev.lunabytes.datagen;
+package dev.lunabytes.client.datagen;
 
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 
-
-public class LunaBytesGenerator implements DataGeneratorEntrypoint {
+public class LunaBytesClientGenerator implements DataGeneratorEntrypoint {
 
     @Override
     public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
         FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
 
-        pack.addProvider(LunaBytesRecipeProvider::new);
-        pack.addProvider(LunaBytesLangProvider::new);
+        pack.addProvider(LunaBytesModelProvider::new);
     }
 }

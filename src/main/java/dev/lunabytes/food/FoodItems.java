@@ -40,6 +40,7 @@ public final class FoodItems {
 
             FoodDefinition.withEffect(
                     "glow_jam",
+                    "Glow Jam",
                     1f,
                     FoodEffect.always(MobEffects.GLOWING, 100, 0),
                     new FoodRecipe.Shapeless(List.of(
@@ -50,6 +51,19 @@ public final class FoodItems {
                     ))
             )
     );
+
+    public static Item getOrCreateForDatagen(String id) {
+        Identifier identifier =
+                Identifier.fromNamespaceAndPath("lunabytes", id);
+
+        return BuiltInRegistries.ITEM
+                .getOptional(identifier)
+                .orElseThrow(() ->
+                        new IllegalStateException(
+                                "Missing item: " + identifier
+                        )
+                );
+    }
 
     private FoodItems() {}
 
