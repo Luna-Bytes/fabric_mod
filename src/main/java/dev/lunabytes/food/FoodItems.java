@@ -44,10 +44,20 @@ public final class FoodItems {
                     1f,
                     FoodEffect.always(MobEffects.GLOWING, 100, 0),
                     new FoodRecipe.Shapeless(List.of(
-                            Items.GLOW_BERRIES,
-                            Items.GLOW_BERRIES,
-                            Items.SUGAR,
-                            Items.GLASS_BOTTLE
+                            () -> Items.GLOW_BERRIES,
+                            () -> Items.GLOW_BERRIES,
+                            () -> Items.SUGAR,
+                            () -> Items.GLASS_BOTTLE
+                    ))
+            ),
+            FoodDefinition.withEffect(
+                    "glow_bread",
+                    "Glow Bread",
+                    1.2f,
+                    FoodEffect.always(MobEffects.GLOWING, 300, 0),
+                    new FoodRecipe.Shapeless(List.of(
+                            () -> FoodItems.get("glow_jam"),
+                            () -> Items.BREAD
                     ))
             )
     );

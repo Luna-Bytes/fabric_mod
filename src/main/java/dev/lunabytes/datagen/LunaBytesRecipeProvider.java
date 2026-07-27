@@ -24,6 +24,7 @@ import org.jspecify.annotations.NullMarked;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 @NullMarked
 public class LunaBytesRecipeProvider extends FabricRecipeProvider {
@@ -46,7 +47,7 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
             @Override
             public void buildRecipes() {
                 for (FoodDefinition def : FoodItems.DEFINITIONS) {
-                    Item result = FoodItems.get(def.id());
+                    Item result = FoodItems.getOrCreateForDatagen(def.id());
 
                     if (result == null) {
                         continue;
@@ -64,13 +65,13 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
                                     shapeless.outputCount()
                             );
 
-                            for (Item ingredient : shapeless.ingredients()) {
-                                builder.requires(ingredient);
+                            for (Supplier<Item> ingredient : shapeless.ingredients()) {
+                                builder.requires(ingredient.get());
                             }
 
                             builder.unlockedBy(
                                     "has_ingredient",
-                                    has(shapeless.ingredients().getFirst())
+                                    has(shapeless.ingredients().getFirst().get())
                             );
 
                             builder.save(exporter);
@@ -88,15 +89,15 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
                                 builder.pattern(row);
                             }
 
-                            for (Map.Entry<Character, Item> entry : shaped.key().entrySet()) {
-                                builder.define(entry.getKey(), entry.getValue());
+                            for (Map.Entry<Character, Supplier<Item>> entry : shaped.key().entrySet()) {
+                                builder.define(entry.getKey(), entry.getValue().get());
                             }
 
-                            Item unlock = shaped.key().values().iterator().next();
+                            Supplier<Item> unlock = shaped.key().values().iterator().next();
 
                             builder.unlockedBy(
                                     "has_ingredient",
-                                    has(unlock)
+                                    has(unlock.get())
                             );
 
                             builder.save(exporter);
@@ -105,34 +106,34 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
                         case FoodRecipe.Cooking cooking -> {
                             switch (cooking.type()) {
                                 case SMELTING -> SimpleCookingRecipeBuilder.smelting(
-                                                Ingredient.of(cooking.input()),
+                                                Ingredient.of(cooking.input().get()),
                                                 RecipeCategory.FOOD,
                                                 CookingBookCategory.FOOD,
                                                 result,
                                                 cooking.experience(),
                                                 cooking.cookTimeTicks()
                                         )
-                                        .unlockedBy("has_ingredient", has(cooking.input()))
+                                        .unlockedBy("has_ingredient", has(cooking.input().get()))
                                         .save(exporter);
 
                                 case SMOKING -> SimpleCookingRecipeBuilder.smoking(
-                                                Ingredient.of(cooking.input()),
+                                                Ingredient.of(cooking.input().get()),
                                                 RecipeCategory.FOOD,
                                                 result,
                                                 cooking.experience(),
                                                 cooking.cookTimeTicks()
                                         )
-                                        .unlockedBy("has_ingredient", has(cooking.input()))
+                                        .unlockedBy("has_ingredient", has(cooking.input().get()))
                                         .save(exporter);
 
                                 case CAMPFIRE -> SimpleCookingRecipeBuilder.campfireCooking(
-                                                Ingredient.of(cooking.input()),
+                                                Ingredient.of(cooking.input().get()),
                                                 RecipeCategory.FOOD,
                                                 result,
                                                 cooking.experience(),
                                                 cooking.cookTimeTicks()
                                         )
-                                        .unlockedBy("has_ingredient", has(cooking.input()))
+                                        .unlockedBy("has_ingredient", has(cooking.input().get()))
                                         .save(exporter);
                             }
                         }

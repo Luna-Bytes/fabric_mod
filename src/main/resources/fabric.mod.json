@@ -22,8 +22,7 @@
 			"dev.lunabytes.client.LunabytesClient"
 		],
 		"fabric-datagen": [
-			"dev.lunabytes.datagen.LunaBytesGenerator",
-			"dev.lunabytes.client.datagen.LunaBytesClientGenerator"
+			"dev.lunabytes.client.datagen.LunaBytesGenerator"
 		]
 	},
 	"mixins": [
