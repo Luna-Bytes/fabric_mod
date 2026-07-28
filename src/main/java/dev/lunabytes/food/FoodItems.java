@@ -3,6 +3,7 @@ package dev.lunabytes.food;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -12,9 +13,11 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,10 +127,71 @@ public final class FoodItems {
         }
         Consumable consumable = consumableBuilder.build();
 
+        // ===== BUILD LORE (tooltip lines) =====
+        List<Component> loreLines = new ArrayList<>();
+
+        // 1. Hearts healed
+        int halfHearts = Math.round(def.healHearts() * 2);
+        StringBuilder hearts = new StringBuilder();
+        hearts.repeat("\u2764", Math.max(0, halfHearts)); // ❤
+        loreLines.add(Component.literal(hearts.toString())
+                .withStyle(style -> style.withColor(0xFF0000).withItalic(false)));
+
+        // 2. Effects with duration and custom icon
+        for (FoodEffect fx : def.effects()) {
+            MobEffectInstance instance = fx.toInstance();
+            String effectName = instance.getEffect().value().getDisplayName().getString();
+            int durationSeconds = instance.getDuration() / 20;
+            int minutes = durationSeconds / 60;
+            int seconds = durationSeconds % 60;
+            String duration = String.format("%d:%02d", minutes, seconds);
+            int amplifier = instance.getAmplifier() + 1; // 0 = I, 1 = II, etc.
+
+            String icon = getEffectIcon(instance.getEffect());
+            String roman = toRoman(amplifier);
+
+            loreLines.add(Component.literal(icon + " " + effectName + roman + "(" + duration + ")")
+                    .withStyle(style -> style.withColor(getEffectColor(instance.getEffect())).withItalic(false)));
+        }
+
+        ItemLore lore = new ItemLore(loreLines);
+
         Item.Properties properties = new Item.Properties()
                 .setId(ResourceKey.create(Registries.ITEM, id))
-                .food(foodProperties, consumable);
+                .food(foodProperties, consumable)
+                .component(net.minecraft.core.component.DataComponents.LORE, lore);
 
         return new Item(properties);
+    }
+
+    private static String getEffectIcon(net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect) {
+        if (effect == MobEffects.STRENGTH) return "\u2694"; // ⚔
+        if (effect == MobEffects.GLOWING) return "\u2728"; // ✨
+        if (effect == MobEffects.REGENERATION) return "\u2764"; // ❤
+        if (effect == MobEffects.RESISTANCE) return "\uD83D\uDEE1"; // 🛡
+        if (effect == MobEffects.SPEED) return "\u26A1"; // ⚡
+        if (effect == MobEffects.FIRE_RESISTANCE) return "\uD83D\uDD25"; // 🔥
+        return "\u2022"; // •
+    }
+
+    private static int getEffectColor(net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect) {
+        if (effect == MobEffects.STRENGTH) return 0xFF6B6B; // red-ish
+        if (effect == MobEffects.GLOWING) return 0xFFE66D; // yellow
+        if (effect == MobEffects.REGENERATION) return 0xE85E8F; // pink
+        if (effect == MobEffects.RESISTANCE) return 0x999999; // gray
+        if (effect == MobEffects.SPEED) return 0x33CCFF; // cyan
+        if (effect == MobEffects.FIRE_RESISTANCE) return 0xFF6600; // orange
+        return 0xAAAAAA; // default gray
+    }
+
+    private static String toRoman(int num) {
+        return switch (num) {
+            case 1 -> " ";
+            case 2 -> " II ";
+            case 3 -> " III ";
+            case 4 -> " IV ";
+            case 5 -> " V ";
+            default -> String.valueOf(num);
+        };
     }
 }
