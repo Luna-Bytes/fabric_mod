@@ -8,14 +8,14 @@ public record FoodDefinition(
         float healHearts,
         float eatSeconds,
         List<FoodEffect> effects,
-        FoodRecipe recipe
+        List<FoodRecipe> recipes
 ) {
 
     public static FoodDefinition plain(
             String id,
             String displayName,
             float healHearts,
-            FoodRecipe recipe
+            FoodRecipe... recipes
     ) {
         return new FoodDefinition(
                 id,
@@ -23,7 +23,23 @@ public record FoodDefinition(
                 healHearts,
                 1.6f,
                 List.of(),
-                recipe
+                List.of(recipes)
+        );
+    }
+
+    public static FoodDefinition plain(
+            String id,
+            String displayName,
+            float healHearts,
+            List<FoodRecipe> recipes
+    ) {
+        return new FoodDefinition(
+                id,
+                displayName,
+                healHearts,
+                1.6f,
+                List.of(),
+                recipes
         );
     }
 
@@ -32,7 +48,7 @@ public record FoodDefinition(
             String displayName,
             float healHearts,
             FoodEffect effect,
-            FoodRecipe recipe
+            FoodRecipe... recipes
     ) {
         return new FoodDefinition(
                 id,
@@ -40,7 +56,58 @@ public record FoodDefinition(
                 healHearts,
                 1.6f,
                 List.of(effect),
-                recipe
+                List.of(recipes)
+        );
+    }
+
+    public static FoodDefinition withEffect(
+            String id,
+            String displayName,
+            float healHearts,
+            FoodEffect effect,
+            List<FoodRecipe> recipes
+    ) {
+        return new FoodDefinition(
+                id,
+                displayName,
+                healHearts,
+                1.6f,
+                List.of(effect),
+                recipes
+        );
+    }
+
+    public static FoodDefinition withEffects(
+            String id,
+            String displayName,
+            float healHearts,
+            List<FoodEffect> effects,
+            FoodRecipe... recipes
+    ) {
+        return new FoodDefinition(
+                id,
+                displayName,
+                healHearts,
+                1.6f,
+                effects,
+                List.of(recipes)
+        );
+    }
+
+    public static FoodDefinition withEffects(
+            String id,
+            String displayName,
+            float healHearts,
+            List<FoodEffect> effects,
+            List<FoodRecipe> recipes
+    ) {
+        return new FoodDefinition(
+                id,
+                displayName,
+                healHearts,
+                1.6f,
+                effects,
+                recipes
         );
     }
 }

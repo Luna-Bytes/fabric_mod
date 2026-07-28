@@ -16,6 +16,7 @@ import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.CookingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -53,92 +54,114 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
                         continue;
                     }
 
-                    switch (def.recipe()) {
-                        case FoodRecipe.None ignored -> {
+                    for (FoodRecipe recipe : def.recipes()) {
+                        buildRecipe(def, result, recipe, items, exporter);
+                    }
+                }
+            }
+
+            private void buildRecipe(
+                    FoodDefinition def,
+                    Item result,
+                    FoodRecipe recipe,
+                    HolderGetter<Item> items,
+                    RecipeOutput exporter
+            ) {
+                switch (recipe) {
+                    case FoodRecipe.None ignored -> {
+                    }
+
+                    case FoodRecipe.Shapeless shapeless -> {
+                        var builder = ShapelessRecipeBuilder.shapeless(
+                                items,
+                                RecipeCategory.FOOD,
+                                result,
+                                shapeless.outputCount()
+                        );
+
+                        for (Supplier<Item> ingredient : shapeless.ingredients()) {
+                            builder.requires(ingredient.get());
                         }
 
-                        case FoodRecipe.Shapeless shapeless -> {
-                            var builder = ShapelessRecipeBuilder.shapeless(
-                                    items,
-                                    RecipeCategory.FOOD,
-                                    result,
-                                    shapeless.outputCount()
-                            );
+                        builder.unlockedBy(
+                                "has_ingredient",
+                                has(shapeless.ingredients().getFirst().get())
+                        );
 
-                            for (Supplier<Item> ingredient : shapeless.ingredients()) {
-                                builder.requires(ingredient.get());
-                            }
+                        builder.save(exporter, recipePath(def.id() + "_shapeless"));
+                    }
 
-                            builder.unlockedBy(
-                                    "has_ingredient",
-                                    has(shapeless.ingredients().getFirst().get())
-                            );
+                    case FoodRecipe.Shaped shaped -> {
+                        var builder = ShapedRecipeBuilder.shaped(
+                                items,
+                                RecipeCategory.FOOD,
+                                result,
+                                shaped.outputCount()
+                        );
 
-                            builder.save(exporter);
+                        for (String row : shaped.pattern()) {
+                            builder.pattern(row);
                         }
 
-                        case FoodRecipe.Shaped shaped -> {
-                            var builder = ShapedRecipeBuilder.shaped(
-                                    items,
-                                    RecipeCategory.FOOD,
-                                    result,
-                                    shaped.outputCount()
-                            );
-
-                            for (String row : shaped.pattern()) {
-                                builder.pattern(row);
-                            }
-
-                            for (Map.Entry<Character, Supplier<Item>> entry : shaped.key().entrySet()) {
-                                builder.define(entry.getKey(), entry.getValue().get());
-                            }
-
-                            Supplier<Item> unlock = shaped.key().values().iterator().next();
-
-                            builder.unlockedBy(
-                                    "has_ingredient",
-                                    has(unlock.get())
-                            );
-
-                            builder.save(exporter);
+                        for (Map.Entry<Character, Supplier<Item>> entry : shaped.key().entrySet()) {
+                            builder.define(entry.getKey(), entry.getValue().get());
                         }
 
-                        case FoodRecipe.Cooking cooking -> {
-                            switch (cooking.type()) {
-                                case SMELTING -> SimpleCookingRecipeBuilder.smelting(
-                                                Ingredient.of(cooking.input().get()),
-                                                RecipeCategory.FOOD,
-                                                CookingBookCategory.FOOD,
-                                                result,
-                                                cooking.experience(),
-                                                cooking.cookTimeTicks()
-                                        )
-                                        .unlockedBy("has_ingredient", has(cooking.input().get()))
-                                        .save(exporter);
+                        Supplier<Item> unlock = shaped.key().values().iterator().next();
 
-                                case SMOKING -> SimpleCookingRecipeBuilder.smoking(
-                                                Ingredient.of(cooking.input().get()),
-                                                RecipeCategory.FOOD,
-                                                result,
-                                                cooking.experience(),
-                                                cooking.cookTimeTicks()
-                                        )
-                                        .unlockedBy("has_ingredient", has(cooking.input().get()))
-                                        .save(exporter);
+                        builder.unlockedBy(
+                                "has_ingredient",
+                                has(unlock.get())
+                        );
 
-                                case CAMPFIRE -> SimpleCookingRecipeBuilder.campfireCooking(
-                                                Ingredient.of(cooking.input().get()),
-                                                RecipeCategory.FOOD,
-                                                result,
-                                                cooking.experience(),
-                                                cooking.cookTimeTicks()
-                                        )
-                                        .unlockedBy("has_ingredient", has(cooking.input().get()))
-                                        .save(exporter);
-                            }
+                        builder.save(exporter, recipePath(def.id() + "_shaped"));
+                    }
+
+                    case FoodRecipe.Cooking cooking -> {
+                        String suffix = switch (cooking.type()) {
+                            case SMELTING -> "_smelting";
+                            case SMOKING -> "_smoking";
+                            case CAMPFIRE -> "_campfire";
+                        };
+
+                        switch (cooking.type()) {
+                            case SMELTING -> SimpleCookingRecipeBuilder.smelting(
+                                            Ingredient.of(cooking.input().get()),
+                                            RecipeCategory.FOOD,
+                                            CookingBookCategory.FOOD,
+                                            result,
+                                            cooking.experience(),
+                                            cooking.cookTimeTicks()
+                                    )
+                                    .unlockedBy("has_ingredient", has(cooking.input().get()))
+                                    .save(exporter, recipePath(def.id() + suffix));
+
+                            case SMOKING -> SimpleCookingRecipeBuilder.smoking(
+                                            Ingredient.of(cooking.input().get()),
+                                            RecipeCategory.FOOD,
+                                            result,
+                                            cooking.experience(),
+                                            cooking.cookTimeTicks()
+                                    )
+                                    .unlockedBy("has_ingredient", has(cooking.input().get()))
+                                    .save(exporter, recipePath(def.id() + suffix));
+
+                            case CAMPFIRE -> SimpleCookingRecipeBuilder.campfireCooking(
+                                            Ingredient.of(cooking.input().get()),
+                                            RecipeCategory.FOOD,
+                                            result,
+                                            cooking.experience(),
+                                            cooking.cookTimeTicks()
+                                    )
+                                    .unlockedBy("has_ingredient", has(cooking.input().get()))
+                                    .save(exporter, recipePath(def.id() + suffix));
                         }
                     }
                 }
+            }
+
+            private String recipePath(String path) {
+                return Identifier.fromNamespaceAndPath("lunabytes", path).toString();
             }
         };
     }
