@@ -1,6 +1,7 @@
 package dev.lunabytes.food;
 
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -11,17 +12,16 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
+import net.minecraft.world.item.consume_effects.ClearAllStatusEffectsConsumeEffect;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 public final class FoodItems {
@@ -31,7 +31,6 @@ public final class FoodItems {
 
     private static final Map<String, Item> REGISTERED = new LinkedHashMap<>();
 
-    /** Identity set of every Item this handler registered, checked by ForceHungerOnConsumeMixin. */
     public static final Set<Item> HANDLED_ITEMS = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
 
     private static final Map<Item, FoodDefinition> DEFINITIONS_BY_ITEM = new java.util.IdentityHashMap<>();
@@ -45,7 +44,8 @@ public final class FoodItems {
                     "glow_jam",
                     "Glow Jam",
                     1f,
-                    FoodEffect.always(MobEffects.GLOWING, 100, 0),
+                    FoodEffect.clearAll(),
+                    () -> Items.GLASS_BOTTLE,
                     new FoodRecipe.Shapeless(List.of(
                             () -> Items.GLOW_BERRIES,
                             () -> Items.GLOW_BERRIES,
@@ -121,37 +121,47 @@ public final class FoodItems {
 
         Consumable.Builder consumableBuilder = Consumable.builder()
                 .consumeSeconds(def.eatSeconds());
+
         for (FoodEffect fx : def.effects()) {
-            MobEffectInstance instance = fx.toInstance();
-            consumableBuilder.onConsume(new ApplyStatusEffectsConsumeEffect(instance, fx.probability()));
+            if (fx.isCleanse()) {
+                consumableBuilder.onConsume(new ClearAllStatusEffectsConsumeEffect());
+            } else {
+                MobEffectInstance instance = fx.toInstance();
+                consumableBuilder.onConsume(new ApplyStatusEffectsConsumeEffect(instance, fx.probability()));
+            }
         }
+
         Consumable consumable = consumableBuilder.build();
 
-        // ===== BUILD LORE (tooltip lines) =====
         List<Component> loreLines = new ArrayList<>();
 
-        // 1. Hearts healed
         int halfHearts = Math.round(def.healHearts() * 2);
         StringBuilder hearts = new StringBuilder();
-        hearts.repeat("\u2764", Math.max(0, halfHearts)); // ❤
+        for (int i = 0; i < halfHearts; i++) {
+            hearts.append("\u2764");
+        }
         loreLines.add(Component.literal(hearts.toString())
                 .withStyle(style -> style.withColor(0xFF0000).withItalic(false)));
 
-        // 2. Effects with duration and custom icon
         for (FoodEffect fx : def.effects()) {
-            MobEffectInstance instance = fx.toInstance();
-            String effectName = instance.getEffect().value().getDisplayName().getString();
-            int durationSeconds = instance.getDuration() / 20;
-            int minutes = durationSeconds / 60;
-            int seconds = durationSeconds % 60;
-            String duration = String.format("%d:%02d", minutes, seconds);
-            int amplifier = instance.getAmplifier() + 1; // 0 = I, 1 = II, etc.
+            if (fx.isCleanse()) {
+                loreLines.add(Component.literal("\uD83E\uDDEA Removes All Effects")
+                        .withStyle(style -> style.withColor(0xA8D8EA).withItalic(false)));
+            } else {
+                MobEffectInstance instance = fx.toInstance();
+                String effectName = instance.getEffect().value().getDisplayName().getString();
+                int durationSeconds = instance.getDuration() / 20;
+                int minutes = durationSeconds / 60;
+                int seconds = durationSeconds % 60;
+                String duration = String.format("%d:%02d", minutes, seconds);
+                int amplifier = instance.getAmplifier() + 1;
 
-            String icon = getEffectIcon(instance.getEffect());
-            String roman = toRoman(amplifier);
+                String icon = getEffectIcon(instance.getEffect());
+                String roman = toRoman(amplifier);
 
-            loreLines.add(Component.literal(icon + " " + effectName + roman + "(" + duration + ")")
-                    .withStyle(style -> style.withColor(getEffectColor(instance.getEffect())).withItalic(false)));
+                loreLines.add(Component.literal(icon + " " + effectName + roman + "(" + duration + ")")
+                        .withStyle(style -> style.withColor(getEffectColor(instance.getEffect())).withItalic(false)));
+            }
         }
 
         ItemLore lore = new ItemLore(loreLines);
@@ -159,29 +169,34 @@ public final class FoodItems {
         Item.Properties properties = new Item.Properties()
                 .setId(ResourceKey.create(Registries.ITEM, id))
                 .food(foodProperties, consumable)
-                .component(net.minecraft.core.component.DataComponents.LORE, lore);
+                .component(DataComponents.LORE, lore);
+
+        // FIX: Use usingConvertsTo instead of manually setting USE_REMAINDER
+        if (def.useRemainder() != null) {
+            properties.usingConvertsTo(def.useRemainder().get());
+        }
 
         return new Item(properties);
     }
 
     private static String getEffectIcon(net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect) {
-        if (effect == MobEffects.STRENGTH) return "\u2694"; // ⚔
-        if (effect == MobEffects.GLOWING) return "\u2728"; // ✨
-        if (effect == MobEffects.REGENERATION) return "\u2764"; // ❤
-        if (effect == MobEffects.RESISTANCE) return "\uD83D\uDEE1"; // 🛡
-        if (effect == MobEffects.SPEED) return "\u26A1"; // ⚡
-        if (effect == MobEffects.FIRE_RESISTANCE) return "\uD83D\uDD25"; // 🔥
-        return "\u2022"; // •
+        if (effect == MobEffects.STRENGTH) return "\u2694";
+        if (effect == MobEffects.GLOWING) return "\u2728";
+        if (effect == MobEffects.REGENERATION) return "\u2764";
+        if (effect == MobEffects.RESISTANCE) return "\uD83D\uDEE1";
+        if (effect == MobEffects.SPEED) return "\u26A1";
+        if (effect == MobEffects.FIRE_RESISTANCE) return "\uD83D\uDD25";
+        return "\u2022";
     }
 
     private static int getEffectColor(net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect) {
-        if (effect == MobEffects.STRENGTH) return 0xFF6B6B; // red-ish
-        if (effect == MobEffects.GLOWING) return 0xFFE66D; // yellow
-        if (effect == MobEffects.REGENERATION) return 0xE85E8F; // pink
-        if (effect == MobEffects.RESISTANCE) return 0x999999; // gray
-        if (effect == MobEffects.SPEED) return 0x33CCFF; // cyan
-        if (effect == MobEffects.FIRE_RESISTANCE) return 0xFF6600; // orange
-        return 0xAAAAAA; // default gray
+        if (effect == MobEffects.STRENGTH) return 0xFF6B6B;
+        if (effect == MobEffects.GLOWING) return 0xFFE66D;
+        if (effect == MobEffects.REGENERATION) return 0xE85E8F;
+        if (effect == MobEffects.RESISTANCE) return 0x999999;
+        if (effect == MobEffects.SPEED) return 0x33CCFF;
+        if (effect == MobEffects.FIRE_RESISTANCE) return 0xFF6600;
+        return 0xAAAAAA;
     }
 
     private static String toRoman(int num) {

@@ -1,6 +1,9 @@
 package dev.lunabytes.food;
 
+import net.minecraft.world.item.Item;
+
 import java.util.List;
+import java.util.function.Supplier;
 
 public record FoodDefinition(
         String id,
@@ -8,7 +11,8 @@ public record FoodDefinition(
         float healHearts,
         float eatSeconds,
         List<FoodEffect> effects,
-        List<FoodRecipe> recipes
+        List<FoodRecipe> recipes,
+        Supplier<Item> useRemainder
 ) {
 
     public static FoodDefinition plain(
@@ -23,7 +27,8 @@ public record FoodDefinition(
                 healHearts,
                 1.6f,
                 List.of(),
-                List.of(recipes)
+                List.of(recipes),
+                null
         );
     }
 
@@ -39,7 +44,26 @@ public record FoodDefinition(
                 healHearts,
                 1.6f,
                 List.of(),
-                recipes
+                recipes,
+                null
+        );
+    }
+
+    public static FoodDefinition plain(
+            String id,
+            String displayName,
+            float healHearts,
+            Supplier<Item> useRemainder,
+            FoodRecipe... recipes
+    ) {
+        return new FoodDefinition(
+                id,
+                displayName,
+                healHearts,
+                1.6f,
+                List.of(),
+                List.of(recipes),
+                useRemainder
         );
     }
 
@@ -56,7 +80,8 @@ public record FoodDefinition(
                 healHearts,
                 1.6f,
                 List.of(effect),
-                List.of(recipes)
+                List.of(recipes),
+                null
         );
     }
 
@@ -73,7 +98,27 @@ public record FoodDefinition(
                 healHearts,
                 1.6f,
                 List.of(effect),
-                recipes
+                recipes,
+                null
+        );
+    }
+
+    public static FoodDefinition withEffect(
+            String id,
+            String displayName,
+            float healHearts,
+            FoodEffect effect,
+            Supplier<Item> useRemainder,
+            FoodRecipe... recipes
+    ) {
+        return new FoodDefinition(
+                id,
+                displayName,
+                healHearts,
+                1.6f,
+                List.of(effect),
+                List.of(recipes),
+                useRemainder
         );
     }
 
@@ -90,7 +135,8 @@ public record FoodDefinition(
                 healHearts,
                 1.6f,
                 effects,
-                List.of(recipes)
+                List.of(recipes),
+                null
         );
     }
 
@@ -107,7 +153,27 @@ public record FoodDefinition(
                 healHearts,
                 1.6f,
                 effects,
-                recipes
+                recipes,
+                null
+        );
+    }
+
+    public static FoodDefinition withEffects(
+            String id,
+            String displayName,
+            float healHearts,
+            List<FoodEffect> effects,
+            Supplier<Item> useRemainder,
+            FoodRecipe... recipes
+    ) {
+        return new FoodDefinition(
+                id,
+                displayName,
+                healHearts,
+                1.6f,
+                effects,
+                List.of(recipes),
+                useRemainder
         );
     }
 }
