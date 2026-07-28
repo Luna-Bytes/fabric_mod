@@ -23,6 +23,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 
 import org.jspecify.annotations.NullMarked;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -54,8 +55,21 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
                         continue;
                     }
 
+                    Map<String, Integer> typeCounts = new HashMap<>();
+
                     for (FoodRecipe recipe : def.recipes()) {
-                        buildRecipe(def, result, recipe, items, exporter);
+                        String typeKey = switch (recipe) {
+                            case FoodRecipe.None ignored -> "none";
+                            case FoodRecipe.Shapeless ignored -> "shapeless";
+                            case FoodRecipe.Shaped ignored -> "shaped";
+                            case FoodRecipe.Cooking cooking -> cooking.type().name().toLowerCase();
+                        };
+
+                        int count = typeCounts.getOrDefault(typeKey, 0);
+                        typeCounts.put(typeKey, count + 1);
+
+                        String suffix = typeKey + (count == 0 ? "" : "_" + (count + 1));
+                        buildRecipe(def, result, recipe, items, exporter, suffix);
                     }
                 }
             }
@@ -65,7 +79,8 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
                     Item result,
                     FoodRecipe recipe,
                     HolderGetter<Item> items,
-                    RecipeOutput exporter
+                    RecipeOutput exporter,
+                    String suffix
             ) {
                 switch (recipe) {
                     case FoodRecipe.None ignored -> {
@@ -88,7 +103,7 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
                                 has(shapeless.ingredients().getFirst().get())
                         );
 
-                        builder.save(exporter, recipePath(def.id() + "_shapeless"));
+                        builder.save(exporter, recipePath(def.id() + "_" + suffix));
                     }
 
                     case FoodRecipe.Shaped shaped -> {
@@ -114,48 +129,37 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
                                 has(unlock.get())
                         );
 
-                        builder.save(exporter, recipePath(def.id() + "_shaped"));
+                        builder.save(exporter, recipePath(def.id() + "_" + suffix));
                     }
 
                     case FoodRecipe.Cooking cooking -> {
-                        String suffix = switch (cooking.type()) {
-                            case SMELTING -> "_smelting";
-                            case SMOKING -> "_smoking";
-                            case CAMPFIRE -> "_campfire";
+                        var builder = switch (cooking.type()) {
+                            case SMELTING -> SimpleCookingRecipeBuilder.smelting(
+                                    Ingredient.of(cooking.input().get()),
+                                    RecipeCategory.FOOD,
+                                    CookingBookCategory.FOOD,
+                                    result,
+                                    cooking.experience(),
+                                    cooking.cookTimeTicks()
+                            );
+                            case SMOKING -> SimpleCookingRecipeBuilder.smoking(
+                                    Ingredient.of(cooking.input().get()),
+                                    RecipeCategory.FOOD,
+                                    result,
+                                    cooking.experience(),
+                                    cooking.cookTimeTicks()
+                            );
+                            case CAMPFIRE -> SimpleCookingRecipeBuilder.campfireCooking(
+                                    Ingredient.of(cooking.input().get()),
+                                    RecipeCategory.FOOD,
+                                    result,
+                                    cooking.experience(),
+                                    cooking.cookTimeTicks()
+                            );
                         };
 
-                        switch (cooking.type()) {
-                            case SMELTING -> SimpleCookingRecipeBuilder.smelting(
-                                            Ingredient.of(cooking.input().get()),
-                                            RecipeCategory.FOOD,
-                                            CookingBookCategory.FOOD,
-                                            result,
-                                            cooking.experience(),
-                                            cooking.cookTimeTicks()
-                                    )
-                                    .unlockedBy("has_ingredient", has(cooking.input().get()))
-                                    .save(exporter, recipePath(def.id() + suffix));
-
-                            case SMOKING -> SimpleCookingRecipeBuilder.smoking(
-                                            Ingredient.of(cooking.input().get()),
-                                            RecipeCategory.FOOD,
-                                            result,
-                                            cooking.experience(),
-                                            cooking.cookTimeTicks()
-                                    )
-                                    .unlockedBy("has_ingredient", has(cooking.input().get()))
-                                    .save(exporter, recipePath(def.id() + suffix));
-
-                            case CAMPFIRE -> SimpleCookingRecipeBuilder.campfireCooking(
-                                            Ingredient.of(cooking.input().get()),
-                                            RecipeCategory.FOOD,
-                                            result,
-                                            cooking.experience(),
-                                            cooking.cookTimeTicks()
-                                    )
-                                    .unlockedBy("has_ingredient", has(cooking.input().get()))
-                                    .save(exporter, recipePath(def.id() + suffix));
-                        }
+                        builder.unlockedBy("has_ingredient", has(cooking.input().get()))
+                                .save(exporter, recipePath(def.id() + "_" + suffix));
                     }
                 }
             }
