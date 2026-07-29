@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagsProvider;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.tags.TagAppender;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import org.jspecify.annotations.NonNull;
 
@@ -35,11 +36,16 @@ public class LunaBytesTagProvider extends FabricTagsProvider.ItemTagsProvider {
         TagAppender<Item> fish_appender = builder(FishTags.FISH);
         TagAppender<Item> cfish_appender = builder(FishTags.C_FISH);
         TagAppender<Item> raw_appender = builder(FishTags.C_RAW);
+        TagAppender<Item> cat_appender = builder(ItemTags.CAT_FOOD);
+        TagAppender<Item> ocelotle_appender = builder(ItemTags.OCELOT_FOOD);
+
 
         for (Item item : FishItems.all().values()) {
             BuiltInRegistries.ITEM.getResourceKey(item).ifPresent(fish_appender::add);
             BuiltInRegistries.ITEM.getResourceKey(item).ifPresent(cfish_appender::add);
             BuiltInRegistries.ITEM.getResourceKey(item).ifPresent(raw_appender::add);
+            BuiltInRegistries.ITEM.getResourceKey(item).ifPresent(cat_appender::add);
+            BuiltInRegistries.ITEM.getResourceKey(item).ifPresent(ocelotle_appender::add);
         }
 
         TagAppender<Item> cod_appender = builder(FishTags.COD);
@@ -66,10 +72,5 @@ public class LunaBytesTagProvider extends FabricTagsProvider.ItemTagsProvider {
             Item item = FishItems.get(def.id());
             BuiltInRegistries.ITEM.getResourceKey(item).ifPresent(tropical_appender::add);
         }
-
-
-
-
-
     }
 }

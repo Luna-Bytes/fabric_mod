@@ -1,5 +1,7 @@
 package dev.lunabytes.mixin;
 
+import dev.lunabytes.fish.FishDefinition;
+import dev.lunabytes.fish.FishItems;
 import dev.lunabytes.food.FoodDefinition;
 import dev.lunabytes.food.FoodItems;
 import net.minecraft.core.component.DataComponents;
@@ -27,10 +29,11 @@ public abstract class EatingHealMixin {
 
         FoodDefinition def = FoodItems.getDefinition(stack.getItem());
         FoodProperties food = stack.get(DataComponents.FOOD);
+        FishDefinition fish_def = FishItems.getDefinition(stack.getItem());
 
         if (def != null) {
             player.heal(def.healHearts() * 2.0F);
-        }else if (food != null) {
+        }else if (food != null && fish_def == null) {
             player.heal((float) (food.nutrition() / 2));
         }
     }
