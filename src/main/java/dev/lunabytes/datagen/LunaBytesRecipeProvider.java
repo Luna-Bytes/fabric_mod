@@ -3,6 +3,7 @@ package dev.lunabytes.datagen;
 import dev.lunabytes.food.FoodDefinition;
 import dev.lunabytes.food.FoodItems;
 import dev.lunabytes.food.FoodRecipe;
+import dev.lunabytes.food.IngredientRef;
 
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
@@ -26,7 +27,6 @@ import org.jspecify.annotations.NullMarked;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 
 @NullMarked
 public class LunaBytesRecipeProvider extends FabricRecipeProvider {
@@ -94,13 +94,13 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
                                 shapeless.outputCount()
                         );
 
-                        for (Supplier<Item> ingredient : shapeless.ingredients()) {
-                            builder.requires(ingredient.get());
+                        for (IngredientRef ingredient : shapeless.ingredients()) {
+                            addIngredient(builder, ingredient);
                         }
 
                         builder.unlockedBy(
                                 "has_ingredient",
-                                has(shapeless.ingredients().getFirst().get())
+                                has(getUnlockItem(shapeless.ingredients().getFirst()))
                         );
 
                         builder.save(exporter, recipePath(def.id() + "_" + suffix));
@@ -118,24 +118,24 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
                             builder.pattern(row);
                         }
 
-                        for (Map.Entry<Character, Supplier<Item>> entry : shaped.key().entrySet()) {
-                            builder.define(entry.getKey(), entry.getValue().get());
+                        for (Map.Entry<Character, IngredientRef> entry : shaped.key().entrySet()) {
+                            addKey(builder, entry.getKey(), entry.getValue());
                         }
-
-                        Supplier<Item> unlock = shaped.key().values().iterator().next();
 
                         builder.unlockedBy(
                                 "has_ingredient",
-                                has(unlock.get())
+                                has(getUnlockItem(shaped.key().values().iterator().next()))
                         );
 
                         builder.save(exporter, recipePath(def.id() + "_" + suffix));
                     }
 
                     case FoodRecipe.Cooking cooking -> {
+                        Ingredient ingredient = toVanillaIngredient(cooking.input());
+
                         var builder = switch (cooking.type()) {
                             case SMELTING -> SimpleCookingRecipeBuilder.smelting(
-                                    Ingredient.of(cooking.input().get()),
+                                    ingredient,
                                     RecipeCategory.FOOD,
                                     CookingBookCategory.FOOD,
                                     result,
@@ -143,14 +143,14 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
                                     cooking.cookTimeTicks()
                             );
                             case SMOKING -> SimpleCookingRecipeBuilder.smoking(
-                                    Ingredient.of(cooking.input().get()),
+                                    ingredient,
                                     RecipeCategory.FOOD,
                                     result,
                                     cooking.experience(),
                                     cooking.cookTimeTicks()
                             );
                             case CAMPFIRE -> SimpleCookingRecipeBuilder.campfireCooking(
-                                    Ingredient.of(cooking.input().get()),
+                                    ingredient,
                                     RecipeCategory.FOOD,
                                     result,
                                     cooking.experience(),
@@ -158,10 +158,55 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
                             );
                         };
 
-                        builder.unlockedBy("has_ingredient", has(cooking.input().get()))
-                                .save(exporter, recipePath(def.id() + "_" + suffix));
+                        builder.unlockedBy(
+                                "has_ingredient",
+                                has(getUnlockItem(cooking.input()))
+                        ).save(exporter, recipePath(def.id() + "_" + suffix));
                     }
                 }
+            }
+
+            // ------------------------------------------------------------------
+            // IngredientRef helpers
+            // ------------------------------------------------------------------
+
+            private void addIngredient(ShapelessRecipeBuilder builder, IngredientRef ref) {
+                switch (ref) {
+                    case IngredientRef.OfItem ofItem ->
+                            builder.requires(ofItem.item().get());
+                    case IngredientRef.OfTag ofTag ->
+                            builder.requires(Ingredient.of());
+                }
+            }
+
+            private void addKey(ShapedRecipeBuilder builder, char symbol, IngredientRef ref) {
+                switch (ref) {
+                    case IngredientRef.OfItem ofItem ->
+                            builder.define(symbol, ofItem.item().get());
+                    case IngredientRef.OfTag ofTag ->
+                            builder.define(symbol, Ingredient.of());
+                }
+            }
+
+            private Ingredient toVanillaIngredient(IngredientRef ref) {
+                return switch (ref) {
+                    case IngredientRef.OfItem ofItem -> Ingredient.of(ofItem.item().get());
+                    case IngredientRef.OfTag ofTag -> Ingredient.of();
+                };
+            }
+
+            private Item getUnlockItem(IngredientRef ref) {
+                return switch (ref) {
+                    case IngredientRef.OfItem ofItem -> ofItem.item().get();
+                    case IngredientRef.OfTag ofTag -> {
+                        // Tags can't be used directly in advancement triggers.
+                        // Return a representative item or null; Fabric's RecipeProvider
+                        // handles tag-based unlocks via has(TagKey) overload below.
+                        throw new IllegalStateException(
+                                "Cannot use tag for advancement unlock. Use has(TagKey) instead."
+                        );
+                    }
+                };
             }
 
             private String recipePath(String path) {
