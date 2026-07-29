@@ -108,13 +108,30 @@ public final class FoodItems {
             FoodDefinition.withEffect(
                     "bread",
                     "Bread",
-                    4f,
+                    2f,
                     FoodEffect.clearAll(),
                     new FoodRecipe.Cooking(
                             IngredientRef.item(() -> FoodItems.get("dough")),
                             0.35f,
                             200,
                             FoodRecipe.Cooking.CookingType.SMELTING
+                    ),
+                    new FoodRecipe.Cooking(
+                            IngredientRef.item(() -> FoodItems.get("dough")),
+                            0.35f,
+                            200,
+                            FoodRecipe.Cooking.CookingType.CAMPFIRE
+                    )
+            ),
+            FoodDefinition.plain(
+                    "naan",
+                    "Naan",
+                    1f,
+                    new FoodRecipe.Cooking(
+                            IngredientRef.item(() -> FoodItems.get("dough")),
+                            0.35f,
+                            100,
+                            FoodRecipe.Cooking.CookingType.SMOKING
                     )
             )
 
