@@ -21,6 +21,7 @@ import net.minecraft.world.item.consume_effects.ClearAllStatusEffectsConsumeEffe
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 
 public final class FoodItems {
@@ -34,11 +35,9 @@ public final class FoodItems {
 
     private static final Map<Item, FoodDefinition> DEFINITIONS_BY_ITEM = new java.util.IdentityHashMap<>();
 
-    // ------------------------------------------------------------------
-    // CONTENT LIST
-    // ------------------------------------------------------------------
-    public static final List<FoodDefinition> DEFINITIONS = List.of(
-            //region Ingredients
+
+    //region Ingredients
+    public static final List<FoodDefinition> INGREDIENTS_DEF = List.of(
             FoodDefinition.withEffect(
                     "milk_bottle",
                     "Milk Bottle",
@@ -51,7 +50,7 @@ public final class FoodItems {
                             IngredientRef.item(Items.GLASS_BOTTLE),
                             IngredientRef.item(Items.GLASS_BOTTLE),
                             IngredientRef.item(Items.GLASS_BOTTLE)
-                    ),4)
+                    ), 4)
             ),
             FoodDefinition.plain(
                     "flour",
@@ -71,14 +70,8 @@ public final class FoodItems {
                     "Flour Bag",
                     0F,
                     new FoodRecipe.Shaped(
-                            new String[] {
-                                    "###",
-                                    "###",
-                                    "###"
-                            },
-                            Map.of(
-                                    '#', IngredientRef.item(() -> FoodItems.get("flour"))
-                            )
+                            new String[]{"###", "###", "###"},
+                            Map.of('#', IngredientRef.item(() -> FoodItems.get("flour")))
                     )
             ),
             FoodDefinition.plain(
@@ -105,9 +98,12 @@ public final class FoodItems {
                             IngredientRef.item(Items.BROWN_MUSHROOM),
                             IngredientRef.item(Items.SUGAR)
                     ))
-            ),
-            //endregion
-            //region Breads
+            )
+    );
+    //endregion
+
+    //region Breads
+    public static final List<FoodDefinition> BREADS_DEF = List.of(
             FoodDefinition.withEffect(
                     "bread",
                     "Bread",
@@ -115,14 +111,12 @@ public final class FoodItems {
                     FoodEffect.clearAll(),
                     new FoodRecipe.Cooking(
                             IngredientRef.item(() -> FoodItems.get("dough")),
-                            0.35f,
-                            200,
+                            0.35f, 200,
                             FoodRecipe.Cooking.CookingType.SMELTING
                     ),
                     new FoodRecipe.Cooking(
                             IngredientRef.item(() -> FoodItems.get("dough")),
-                            0.35f,
-                            200,
+                            0.35f, 200,
                             FoodRecipe.Cooking.CookingType.CAMPFIRE
                     )
             ),
@@ -132,28 +126,28 @@ public final class FoodItems {
                     1f,
                     new FoodRecipe.Cooking(
                             IngredientRef.item(() -> FoodItems.get("dough")),
-                            0.35f,
-                            100,
+                            0.35f, 100,
                             FoodRecipe.Cooking.CookingType.SMOKING
                     )
-            ),
-            //endregion
-            //region Baked Things
+            )
+    );
+    //endregion
+
+    //region Baked Things
+    public static final List<FoodDefinition> BAKED_DEF = List.of(
             FoodDefinition.withEffect(
                     "baked_apple",
                     "Baked Apple",
                     2f,
-                    FoodEffect.always(MobEffects.REGENERATION,200,1),
+                    FoodEffect.always(MobEffects.REGENERATION, 200, 1),
                     new FoodRecipe.Cooking(
                             IngredientRef.item(Items.APPLE),
-                            0.35f,
-                            200,
+                            0.35f, 200,
                             FoodRecipe.Cooking.CookingType.SMELTING
                     ),
                     new FoodRecipe.Cooking(
                             IngredientRef.item(Items.APPLE),
-                            0.35f,
-                            200,
+                            0.35f, 200,
                             FoodRecipe.Cooking.CookingType.CAMPFIRE
                     )
             ),
@@ -164,14 +158,12 @@ public final class FoodItems {
                     FoodEffect.always(MobEffects.REGENERATION, 1200, 1),
                     new FoodRecipe.Cooking(
                             IngredientRef.item(Items.GOLDEN_APPLE),
-                            0.35f,
-                            200,
+                            0.35f, 200,
                             FoodRecipe.Cooking.CookingType.SMELTING
                     ),
                     new FoodRecipe.Cooking(
                             IngredientRef.item(Items.GOLDEN_APPLE),
-                            0.35f,
-                            200,
+                            0.35f, 200,
                             FoodRecipe.Cooking.CookingType.CAMPFIRE
                     )
             ),
@@ -181,14 +173,12 @@ public final class FoodItems {
                     2.5f,
                     new FoodRecipe.Cooking(
                             IngredientRef.item(Items.POTATO),
-                            0.35f,
-                            200,
+                            0.35f, 200,
                             FoodRecipe.Cooking.CookingType.SMELTING
                     ),
                     new FoodRecipe.Cooking(
                             IngredientRef.item(Items.POTATO),
-                            0.35f,
-                            200,
+                            0.35f, 200,
                             FoodRecipe.Cooking.CookingType.CAMPFIRE
                     )
             ),
@@ -199,20 +189,24 @@ public final class FoodItems {
                     FoodEffect.always(MobEffects.RESISTANCE, 200, 1),
                     new FoodRecipe.Cooking(
                             IngredientRef.item(Items.PUMPKIN),
-                            0.35f,
-                            200,
+                            0.35f, 200,
                             FoodRecipe.Cooking.CookingType.SMELTING
                     ),
                     new FoodRecipe.Cooking(
                             IngredientRef.item(Items.PUMPKIN),
-                            0.35f,
-                            200,
+                            0.35f, 200,
                             FoodRecipe.Cooking.CookingType.CAMPFIRE
                     )
             )
-            //endregion
-
     );
+    //endregion
+
+    // Combine them all
+    public static final List<FoodDefinition> DEFINITIONS = Stream.of(
+            INGREDIENTS_DEF,
+            BREADS_DEF,
+            BAKED_DEF
+    ).flatMap(List::stream).toList();
 
     public static Item getOrCreateForDatagen(String id) {
         Identifier identifier =
