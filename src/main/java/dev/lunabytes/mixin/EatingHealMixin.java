@@ -31,7 +31,7 @@ public abstract class EatingHealMixin {
         if (def != null) {
             player.heal(def.healHearts() * 2.0F);
         }else if (food != null) {
-            player.heal(food.saturation() / 2);
+            player.heal((float) (food.nutrition() / 2));
         }
     }
 }
