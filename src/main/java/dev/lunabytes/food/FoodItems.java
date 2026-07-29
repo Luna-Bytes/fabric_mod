@@ -1,5 +1,6 @@
 package dev.lunabytes.food;
 
+import dev.lunabytes.fish.FishTags;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -201,11 +202,76 @@ public final class FoodItems {
     );
     //endregion
 
+    //region Fish
+    public static final List<FoodDefinition> FISH_DEF = List.of(
+            FoodDefinition.plain(
+                    "cooked_fish",
+                    "Cooked Fish",
+                    2f,
+                    new FoodRecipe.Cooking(
+                            IngredientRef.tag(FishTags.COD),
+                            0.35f, 200,
+                            FoodRecipe.Cooking.CookingType.SMELTING
+                    ),
+                    new FoodRecipe.Cooking(
+                            IngredientRef.tag(FishTags.COD),
+                            0.35f, 200,
+                            FoodRecipe.Cooking.CookingType.CAMPFIRE
+                    ),
+                    new FoodRecipe.Cooking(
+                            IngredientRef.tag(FishTags.TROPICAL),
+                            0.35f, 200,
+                            FoodRecipe.Cooking.CookingType.SMELTING
+                    ),
+                    new FoodRecipe.Cooking(
+                            IngredientRef.tag(FishTags.TROPICAL),
+                            0.35f, 200,
+                            FoodRecipe.Cooking.CookingType.CAMPFIRE
+                    )
+            ),
+            FoodDefinition.withEffect(
+                    "cooked_fish_with_effect",
+                    "Cooked Fish",
+                    2f,
+                    FoodEffect.always(
+                            MobEffects.CONDUIT_POWER, 600, 1
+                    ),
+                    new FoodRecipe.Cooking(
+                            IngredientRef.tag(FishTags.PUFFY),
+                            0.35f, 200,
+                            FoodRecipe.Cooking.CookingType.SMELTING
+                    ),
+                    new FoodRecipe.Cooking(
+                            IngredientRef.tag(FishTags.PUFFY),
+                            0.35f, 200,
+                            FoodRecipe.Cooking.CookingType.CAMPFIRE
+                    )
+            ),
+            FoodDefinition.plain(
+                    "cooked_large_fish",
+                    "Cooked Large Fish",
+                    2.5f,
+                    new FoodRecipe.Cooking(
+                            IngredientRef.tag(FishTags.SALMON),
+                            0.35f, 200,
+                            FoodRecipe.Cooking.CookingType.SMELTING
+                    ),
+                    new FoodRecipe.Cooking(
+                            IngredientRef.tag(FishTags.SALMON),
+                            0.35f, 200,
+                            FoodRecipe.Cooking.CookingType.CAMPFIRE
+                    )
+            )
+    );
+
+    //endregion
+
     // Combine them all
     public static final List<FoodDefinition> DEFINITIONS = Stream.of(
             INGREDIENTS_DEF,
             BREADS_DEF,
-            BAKED_DEF
+            BAKED_DEF,
+            FISH_DEF
     ).flatMap(List::stream).toList();
 
     public static Item getOrCreateForDatagen(String id) {

@@ -8,6 +8,7 @@ import dev.lunabytes.food.IngredientRef;
 import net.fabricmc.fabric.api.datagen.v1.FabricPackOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricRecipeProvider;
 
+import net.minecraft.advancements.triggers.Criterion;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
@@ -18,7 +19,6 @@ import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
 import net.minecraft.resources.Identifier;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.CookingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -101,7 +101,7 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
 
                         builder.unlockedBy(
                                 "has_ingredient",
-                                has(getUnlockItem(shapeless.ingredients().getFirst()))
+                                getCriterion(shapeless.ingredients().getFirst(), items)
                         );
 
                         builder.save(exporter, recipePath(def.id() + "_" + suffix));
@@ -125,7 +125,7 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
 
                         builder.unlockedBy(
                                 "has_ingredient",
-                                has(getUnlockItem(shaped.key().values().iterator().next()))
+                                getCriterion(shaped.key().values().iterator().next(), items)
                         );
 
                         builder.save(exporter, recipePath(def.id() + "_" + suffix));
@@ -161,7 +161,7 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
 
                         builder.unlockedBy(
                                 "has_ingredient",
-                                has(getUnlockItem(cooking.input()))
+                                getCriterion(cooking.input(), items)
                         ).save(exporter, recipePath(def.id() + "_" + suffix));
                     }
                 }
@@ -196,14 +196,14 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
                 };
             }
 
-            private Item getUnlockItem(IngredientRef ref) {
+            /**
+             * Returns the correct Criterion for advancement unlocks.
+             * Uses has(Item) for items and has(TagKey) for tags.
+             */
+            private Criterion<?> getCriterion(IngredientRef ref, HolderGetter<Item> items) {
                 return switch (ref) {
-                    case IngredientRef.OfItem ofItem -> ofItem.item().get();
-                    case IngredientRef.OfTag ofTag -> {
-                        throw new IllegalStateException(
-                                "Cannot use tag for advancement unlock. Use has(TagKey) instead."
-                        );
-                    }
+                    case IngredientRef.OfItem ofItem -> has(ofItem.item().get());
+                    case IngredientRef.OfTag ofTag -> has(ofTag.tag());
                 };
             }
 
