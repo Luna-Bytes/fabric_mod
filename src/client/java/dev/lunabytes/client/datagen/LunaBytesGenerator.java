@@ -13,9 +13,9 @@ public class LunaBytesGenerator implements DataGeneratorEntrypoint {
     public void onInitializeDataGenerator(FabricDataGenerator fabricDataGenerator) {
         FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
 
+        pack.addProvider(LunaBytesTagProvider::new);
         pack.addProvider(LunaBytesRecipeProvider::new);
         pack.addProvider(LunaBytesLangProvider::new);
         pack.addProvider(LunaBytesModelProvider::new);
-        pack.addProvider(LunaBytesTagProvider::new);
     }
 }

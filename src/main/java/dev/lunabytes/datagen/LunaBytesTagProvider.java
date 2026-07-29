@@ -1,5 +1,6 @@
 package dev.lunabytes.datagen;
 
+import dev.lunabytes.fish.FishDefinition;
 import dev.lunabytes.fish.FishItems;
 import dev.lunabytes.fish.FishTags;
 import dev.lunabytes.food.FoodItems;
@@ -40,6 +41,35 @@ public class LunaBytesTagProvider extends FabricTagsProvider.ItemTagsProvider {
             BuiltInRegistries.ITEM.getResourceKey(item).ifPresent(cfish_appender::add);
             BuiltInRegistries.ITEM.getResourceKey(item).ifPresent(raw_appender::add);
         }
+
+        TagAppender<Item> cod_appender = builder(FishTags.COD);
+        TagAppender<Item> puffy_appender = builder(FishTags.PUFFY);
+        TagAppender<Item> salmon_appender = builder(FishTags.SALMON);
+        TagAppender<Item> tropical_appender = builder(FishTags.TROPICAL);
+
+        for (FishDefinition def : FishItems.COD_DEFINITIONS) {
+            Item item = FishItems.get(def.id());
+            BuiltInRegistries.ITEM.getResourceKey(item).ifPresent(cod_appender::add);
+        }
+
+        for (FishDefinition def : FishItems.PUFFER_DEFINITIONS) {
+            Item item = FishItems.get(def.id());
+            BuiltInRegistries.ITEM.getResourceKey(item).ifPresent(puffy_appender::add);
+        }
+
+        for (FishDefinition def : FishItems.SALMON_DEFINITIONS) {
+            Item item = FishItems.get(def.id());
+            BuiltInRegistries.ITEM.getResourceKey(item).ifPresent(salmon_appender::add);
+        }
+
+        for (FishDefinition def : FishItems.TROPICAL_DEFINITIONS) {
+            Item item = FishItems.get(def.id());
+            BuiltInRegistries.ITEM.getResourceKey(item).ifPresent(tropical_appender::add);
+        }
+
+
+
+
 
     }
 }

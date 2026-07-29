@@ -1,5 +1,6 @@
 package dev.lunabytes.fish;
 
+import dev.lunabytes.food.FoodDefinition;
 import dev.lunabytes.food.FoodEffect;
 
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public final class FishItems {
 
@@ -49,57 +51,73 @@ public final class FishItems {
     // it spawns the entity, and it never had a rarity indicator in the
     // original datapack)
     // ------------------------------------------------------------------
-    public static final List<FishDefinition> DEFINITIONS = List.of(
-            FishDefinition.of("alaska_blackfish", FishRarity.COMMON),
-            FishDefinition.of("anchovy", FishRarity.COMMON),
-            FishDefinition.of("arapaima", FishRarity.EPIC),
-            FishDefinition.of("armoured_catfish", FishRarity.RARE),
-            FishDefinition.of("bass", FishRarity.EPIC),
-            FishDefinition.of("black_seabass", FishRarity.UNCOMMON),
-            FishDefinition.of("blind_cave_fish", FishRarity.COMMON), // TODO: Missing Texture
-            FishDefinition.of("blind_minnow", FishRarity.COMMON), // TODO: Missing Texture
-            FishDefinition.of("bluegill", FishRarity.COMMON),
-            FishDefinition.of("bujurqui", FishRarity.COMMON),
-            FishDefinition.of("carp", FishRarity.UNCOMMON),
-            FishDefinition.of("catfish", FishRarity.RARE),
-            FishDefinition.of("cod", FishRarity.COMMON),
-            FishDefinition.of("crappie", FishRarity.COMMON),
-            FishDefinition.of("echo_fish", FishRarity.UNCOMMON),
-            FishDefinition.of("european_eel", FishRarity.EPIC),
-            FishDefinition.of("flounder", FishRarity.RARE),
-            FishDefinition.of("flying_fish", FishRarity.UNCOMMON),
-            FishDefinition.withEffects("freshwater_pufferfish", FishRarity.COMMON, PUFFERFISH_EFFECTS),
-            FishDefinition.of("gar", FishRarity.RARE),
-            FishDefinition.of("guppy", FishRarity.COMMON),
-            FishDefinition.of("gurnard", FishRarity.UNCOMMON),
-            FishDefinition.of("herring", FishRarity.UNCOMMON),
-            FishDefinition.of("humpback_whitefish", FishRarity.COMMON),
-            FishDefinition.of("lamprey", FishRarity.UNCOMMON),
-            FishDefinition.of("mahi_mahi", FishRarity.UNCOMMON),
-            FishDefinition.of("mediterranean_killifish", FishRarity.COMMON),
-            FishDefinition.of("monkfish", FishRarity.RARE),
-            FishDefinition.of("muskellunge", FishRarity.EPIC),
-            FishDefinition.of("northern_pike", FishRarity.RARE),
-            FishDefinition.of("oarfish", FishRarity.EPIC),
-            FishDefinition.of("opah", FishRarity.EPIC),
-            FishDefinition.of("painted_moray", FishRarity.RARE),
-            FishDefinition.of("pale_fish", FishRarity.UNCOMMON),
-            FishDefinition.of("piranha", FishRarity.UNCOMMON),
-            FishDefinition.withEffects("pufferfish", FishRarity.COMMON, PUFFERFISH_EFFECTS),
-            FishDefinition.of("rainbow_wrasse", FishRarity.COMMON),
-            FishDefinition.of("salmon", FishRarity.COMMON),
-            FishDefinition.of("shad", FishRarity.COMMON),
-            FishDefinition.of("siberian_sturgeon", FishRarity.EPIC),
-            FishDefinition.of("skate", FishRarity.EPIC),
-            FishDefinition.of("spoonhead_sculpin", FishRarity.UNCOMMON),
+    public static final List<FishDefinition> COD_DEFINITIONS = List.of(
             FishDefinition.of("striped_perch", FishRarity.COMMON),
-            FishDefinition.of("sturgeon", FishRarity.RARE),
-            FishDefinition.of("swordfish", FishRarity.EPIC),
-            FishDefinition.of("tropical_fish", FishRarity.COMMON),
-            FishDefinition.of("tunisian_barb", FishRarity.RARE),
-            FishDefinition.of("walleye", FishRarity.UNCOMMON),
-            FishDefinition.of("wolffish", FishRarity.RARE)
+            FishDefinition.of("spoonhead_sculpin", FishRarity.UNCOMMON),
+            FishDefinition.of("shad", FishRarity.COMMON),
+            FishDefinition.of("flying_fish", FishRarity.UNCOMMON),
+            FishDefinition.of("rainbow_wrasse", FishRarity.COMMON),
+            FishDefinition.of("piranha", FishRarity.UNCOMMON),
+            FishDefinition.of("echo_fish", FishRarity.UNCOMMON),
+            FishDefinition.of("pale_fish", FishRarity.UNCOMMON),
+            FishDefinition.of("crappie", FishRarity.COMMON),
+            FishDefinition.of("cod", FishRarity.COMMON),
+            FishDefinition.of("bujurqui", FishRarity.COMMON),
+            FishDefinition.of("mediterranean_killifish", FishRarity.COMMON),
+            FishDefinition.of("gurnard", FishRarity.UNCOMMON),
+            FishDefinition.of("guppy", FishRarity.COMMON),
+            FishDefinition.of("lamprey", FishRarity.UNCOMMON),
+            FishDefinition.of("herring", FishRarity.UNCOMMON),
+            FishDefinition.of("bluegill", FishRarity.COMMON),
+            FishDefinition.of("anchovy", FishRarity.COMMON),
+            FishDefinition.of("humpback_whitefish", FishRarity.COMMON),
+            FishDefinition.of("alaska_blackfish", FishRarity.COMMON),
+            FishDefinition.of("blind_minnow", FishRarity.COMMON),
+            FishDefinition.of("blind_cave_fish", FishRarity.COMMON)
     );
+
+    public static final List<FishDefinition> PUFFER_DEFINITIONS = List.of(
+            FishDefinition.withEffects("pufferfish", FishRarity.COMMON, PUFFERFISH_EFFECTS),
+            FishDefinition.withEffects("freshwater_pufferfish", FishRarity.COMMON, PUFFERFISH_EFFECTS)
+    );
+
+    public static final List<FishDefinition> TROPICAL_DEFINITIONS = List.of(
+            FishDefinition.of("tropical_fish", FishRarity.COMMON)
+    );
+
+    public static final List<FishDefinition> SALMON_DEFINITIONS = List.of(
+            FishDefinition.of("wolffish", FishRarity.RARE),
+            FishDefinition.of("gar", FishRarity.RARE),
+            FishDefinition.of("walleye", FishRarity.UNCOMMON),
+            FishDefinition.of("flounder", FishRarity.RARE),
+            FishDefinition.of("tunisian_barb", FishRarity.RARE),
+            FishDefinition.of("european_eel", FishRarity.EPIC),
+            FishDefinition.of("catfish", FishRarity.RARE),
+            FishDefinition.of("swordfish", FishRarity.EPIC),
+            FishDefinition.of("carp", FishRarity.UNCOMMON),
+            FishDefinition.of("sturgeon", FishRarity.RARE),
+            FishDefinition.of("painted_moray", FishRarity.RARE),
+            FishDefinition.of("black_seabass", FishRarity.UNCOMMON),
+            FishDefinition.of("opah", FishRarity.EPIC),
+            FishDefinition.of("bass", FishRarity.EPIC),
+            FishDefinition.of("monkfish", FishRarity.RARE),
+            FishDefinition.of("oarfish", FishRarity.EPIC),
+            FishDefinition.of("armoured_catfish", FishRarity.RARE),
+            FishDefinition.of("northern_pike", FishRarity.RARE),
+            FishDefinition.of("skate", FishRarity.EPIC),
+            FishDefinition.of("muskellunge", FishRarity.EPIC),
+            FishDefinition.of("arapaima", FishRarity.EPIC),
+            FishDefinition.of("mahi_mahi", FishRarity.UNCOMMON),
+            FishDefinition.of("siberian_sturgeon", FishRarity.EPIC),
+            FishDefinition.of("salmon", FishRarity.COMMON)
+    );
+
+    public static final List<FishDefinition> DEFINITIONS = Stream.of(
+            COD_DEFINITIONS,
+            PUFFER_DEFINITIONS,
+            TROPICAL_DEFINITIONS,
+            SALMON_DEFINITIONS
+    ).flatMap(List::stream).toList();
 
     public static void registerAll() {
         for (FishDefinition def : DEFINITIONS) {
