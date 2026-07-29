@@ -7,16 +7,15 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.Consumable;
 import net.minecraft.world.item.component.ItemLore;
-import net.minecraft.world.item.component.UseRemainder;
 import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
 import net.minecraft.world.item.consume_effects.ClearAllStatusEffectsConsumeEffect;
 import net.fabricmc.fabric.api.creativetab.v1.CreativeModeTabEvents;
@@ -39,30 +38,86 @@ public final class FoodItems {
     // CONTENT LIST
     // ------------------------------------------------------------------
     public static final List<FoodDefinition> DEFINITIONS = List.of(
-
             FoodDefinition.withEffect(
-                    "glow_jam",
-                    "Glow Jam",
-                    1f,
+                    "milk_bottle",
+                    "Milk Bottle",
+                    0F,
                     FoodEffect.clearAll(),
                     () -> Items.GLASS_BOTTLE,
                     new FoodRecipe.Shapeless(List.of(
-                            () -> Items.GLOW_BERRIES,
-                            () -> Items.GLOW_BERRIES,
-                            () -> Items.SUGAR,
-                            () -> Items.GLASS_BOTTLE
+                            IngredientRef.item(Items.MILK_BUCKET),
+                            IngredientRef.item(Items.GLASS_BOTTLE),
+                            IngredientRef.item(Items.GLASS_BOTTLE),
+                            IngredientRef.item(Items.GLASS_BOTTLE),
+                            IngredientRef.item(Items.GLASS_BOTTLE)
+                    ),4)
+            ),
+            FoodDefinition.plain(
+                    "flour",
+                    "Flour",
+                    0F,
+                    new FoodRecipe.Shapeless(List.of(
+                            IngredientRef.item(Items.WHEAT_SEEDS),
+                            IngredientRef.item(Items.WHEAT_SEEDS),
+                            IngredientRef.item(Items.WHEAT_SEEDS)
+                    )),
+                    new FoodRecipe.Shapeless(List.of(
+                            IngredientRef.item(() -> FoodItems.get("flour_bag"))
+                    ), 9)
+            ),
+            FoodDefinition.plain(
+                    "flour_bag",
+                    "Flour Bag",
+                    0F,
+                    new FoodRecipe.Shaped(
+                            new String[] {
+                                    "###",
+                                    "###",
+                                    "###"
+                            },
+                            Map.of(
+                                    '#', IngredientRef.item(() -> FoodItems.get("flour"))
+                            )
+                    )
+            ),
+            FoodDefinition.plain(
+                    "dough",
+                    "Dough",
+                    0f,
+                    new FoodRecipe.Shapeless(List.of(
+                            IngredientRef.item(() -> FoodItems.get("flour")),
+                            IngredientRef.item(Items.POTION)
+                    )),
+                    new FoodRecipe.Shapeless(List.of(
+                            IngredientRef.item(() -> FoodItems.get("flour")),
+                            IngredientRef.item(() -> FoodItems.get("flour")),
+                            IngredientRef.item(() -> FoodItems.get("flour")),
+                            IngredientRef.tag(ItemTags.EGGS)
+                    ), 3)
+            ),
+            FoodDefinition.plain(
+                    "cheese",
+                    "Cheese",
+                    1.5f,
+                    new FoodRecipe.Shapeless(List.of(
+                            IngredientRef.item(() -> FoodItems.get("milk_bottle")),
+                            IngredientRef.item(Items.BROWN_MUSHROOM),
+                            IngredientRef.item(Items.SUGAR)
                     ))
             ),
             FoodDefinition.withEffect(
-                    "glow_bread",
-                    "Glow Bread",
-                    1.2f,
-                    FoodEffect.always(MobEffects.GLOWING, 300, 0),
-                    new FoodRecipe.Shapeless(List.of(
-                            () -> FoodItems.get("glow_jam"),
-                            () -> Items.BREAD
-                    ))
+                    "bread",
+                    "Bread",
+                    4f,
+                    FoodEffect.clearAll(),
+                    new FoodRecipe.Cooking(
+                            IngredientRef.item(() -> FoodItems.get("dough")),
+                            0.35f,
+                            200,
+                            FoodRecipe.Cooking.CookingType.SMELTING
+                    )
             )
+
     );
 
     public static Item getOrCreateForDatagen(String id) {
@@ -137,9 +192,7 @@ public final class FoodItems {
 
         int halfHearts = Math.round(def.healHearts() * 2);
         StringBuilder hearts = new StringBuilder();
-        for (int i = 0; i < halfHearts; i++) {
-            hearts.append("\u2764");
-        }
+        hearts.repeat("\u2764", Math.max(0, halfHearts));
         loreLines.add(Component.literal(hearts.toString())
                 .withStyle(style -> style.withColor(0xFF0000).withItalic(false)));
 
