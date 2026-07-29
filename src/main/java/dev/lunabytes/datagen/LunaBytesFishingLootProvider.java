@@ -20,9 +20,12 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.entries.NestedLootTable;
+import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
+import net.minecraft.world.level.storage.loot.functions.SetItemDamageFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.predicates.LocationCheck;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
+import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
@@ -32,7 +35,6 @@ import java.util.function.BiConsumer;
  * table, converted from the source datapack. Biome grouping is done through
  * the tags in LunaBytesFishingBiomeTagProvider - same approach the original
  * datapack used (data/minecraft/tags/worldgen/biome/*.json).
- *
  * One fix vs. the source: its root fishing.json pointed BOTH the
  * freshwater_hot_wet AND freshwater_hot_dry entries at the #freshwater_hot_dry
  * tag (copy-paste bug), so jungle/bamboo_jungle biomes never actually rolled
@@ -104,7 +106,7 @@ public class LunaBytesFishingLootProvider extends SimpleFabricLootTableSubProvid
                         .add(LootItem.lootTableItem(Items.GUNPOWDER))
         ));
 
-        out.accept(fishingKey("junk"), buildJunkTable());
+        out.accept(fishingKey("junk"), buildJunkTable(biomes));
         out.accept(fishingKey("treasure"), buildTreasureTable());
 
         out.accept(FISHING, buildRootTable(biomes));
@@ -115,64 +117,80 @@ public class LunaBytesFishingLootProvider extends SimpleFabricLootTableSubProvid
         LootPool.Builder pool = LootPool.lootPool()
                 .setRolls(ConstantValue.exactly(1))
                 .setBonusRolls(ConstantValue.exactly(0))
-                .add(nested("junk", 10))
-                .add(nested("treasure", 5))
-                .add(biomeGated("freshwater_cold", 85, biomes, LunaBytesFishingBiomeTagProvider.FRESHWATER_COLD))
-                .add(biomeGated("freshwater_cool", 85, biomes, LunaBytesFishingBiomeTagProvider.FRESHWATER_COOL))
-                .add(biomeGated("freshwater_temperate", 85, biomes, LunaBytesFishingBiomeTagProvider.FRESHWATER_TEMPERATE))
-                .add(biomeGated("freshwater_hot_wet", 85, biomes, LunaBytesFishingBiomeTagProvider.FRESHWATER_HOT_WET))
-                .add(biomeGated("freshwater_hot_dry", 85, biomes, LunaBytesFishingBiomeTagProvider.FRESHWATER_HOT_DRY))
-                .add(biomeGated("saltwater_cold", 85, biomes, LunaBytesFishingBiomeTagProvider.SALTWATER_COLD))
-                .add(biomeGated("saltwater_cool", 85, biomes, LunaBytesFishingBiomeTagProvider.SALTWATER_COOL))
-                .add(biomeGated("saltwater_temperate", 85, biomes, LunaBytesFishingBiomeTagProvider.SALTWATER_TEMPERATE))
-                .add(biomeGated("saltwater_warm", 85, biomes, LunaBytesFishingBiomeTagProvider.SALTWATER_WARM))
-                .add(biomeGated("saltwater_hot", 85, biomes, LunaBytesFishingBiomeTagProvider.SALTWATER_HOT))
-                .add(biomeGated("swamps", 85, biomes, LunaBytesFishingBiomeTagProvider.SWAMPS))
-                .add(biomeGatedSingle("deep_dark", 85, biomes, net.minecraft.world.level.biome.Biomes.DEEP_DARK))
-                .add(biomeGatedSingle("sulfur_caves", 85, biomes, ResourceKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("minecraft", "sulfur_caves"))))
-                .add(biomeGated("freshwater_temperate", 85, biomes,
+                .add(nested("junk", 10, -2))
+                .add(nested("treasure", 5, 2))
+                .add(biomeGated("freshwater_cold", 85, -1, biomes, LunaBytesFishingBiomeTagProvider.FRESHWATER_COLD))
+                .add(biomeGated("freshwater_cool", 85, -1, biomes, LunaBytesFishingBiomeTagProvider.FRESHWATER_COOL))
+                .add(biomeGated("freshwater_temperate", 85, -1, biomes, LunaBytesFishingBiomeTagProvider.FRESHWATER_TEMPERATE))
+                .add(biomeGated("freshwater_hot_wet", 85, -1, biomes, LunaBytesFishingBiomeTagProvider.FRESHWATER_HOT_WET))
+                .add(biomeGated("freshwater_hot_dry", 85, -1, biomes, LunaBytesFishingBiomeTagProvider.FRESHWATER_HOT_DRY))
+                .add(biomeGated("saltwater_cold", 85, -1, biomes, LunaBytesFishingBiomeTagProvider.SALTWATER_COLD))
+                .add(biomeGated("saltwater_cool", 85, -1, biomes, LunaBytesFishingBiomeTagProvider.SALTWATER_COOL))
+                .add(biomeGated("saltwater_temperate", 85, -1, biomes, LunaBytesFishingBiomeTagProvider.SALTWATER_TEMPERATE))
+                .add(biomeGated("saltwater_warm", 85, -1, biomes, LunaBytesFishingBiomeTagProvider.SALTWATER_WARM))
+                .add(biomeGated("saltwater_hot", 85, -1, biomes, LunaBytesFishingBiomeTagProvider.SALTWATER_HOT))
+                .add(biomeGated("swamps", 85, -1, biomes, LunaBytesFishingBiomeTagProvider.SWAMPS))
+                .add(biomeGatedSingle("deep_dark", 85, -1, biomes, net.minecraft.world.level.biome.Biomes.DEEP_DARK))
+                .add(biomeGatedSingle("sulfur_caves", 85, -1, biomes, ResourceKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("minecraft", "sulfur_caves"))))
+                .add(biomeGated("freshwater_temperate", 85, -1, biomes,
                         net.minecraft.world.level.biome.Biomes.DRIPSTONE_CAVES, net.minecraft.world.level.biome.Biomes.LUSH_CAVES))
-                .add(biomeGatedSingle("pale_garden", 85, biomes, net.minecraft.world.level.biome.Biomes.PALE_GARDEN));
+                .add(biomeGatedSingle("pale_garden", 85, -1, biomes, net.minecraft.world.level.biome.Biomes.PALE_GARDEN));
 
         return LootTable.lootTable().withPool(pool);
     }
 
-    private LootPoolEntryContainer.Builder<?> nested(String path, int weight) {
-        return NestedLootTable.lootTableReference(fishingKey(path)).setWeight(weight);
+    private LootPoolEntryContainer.Builder<?> nested(String path, int weight, int quality) {
+        return NestedLootTable.lootTableReference(fishingKey(path))
+                .setWeight(weight)
+                .setQuality(quality);
     }
 
     @SafeVarargs
-    private LootPoolEntryContainer.Builder<?> biomeGated(String path, int weight, HolderGetter<Biome> biomes,
+    private LootPoolEntryContainer.Builder<?> biomeGated(String path, int weight, int quality, HolderGetter<Biome> biomes,
                                                          ResourceKey<Biome>... explicitBiomes) {
         HolderSet<Biome> set = HolderSet.direct(biomes::getOrThrow, explicitBiomes);
-        return nested(path, weight).when(LocationCheck.checkLocation(
+        return nested(path, weight, quality).when(LocationCheck.checkLocation(
                 LocationPredicate.Builder.location().setBiomes(set)));
     }
 
-    private LootPoolEntryContainer.Builder<?> biomeGated(String path, int weight, HolderGetter<Biome> biomes, TagKey<Biome> tag) {
+    private LootPoolEntryContainer.Builder<?> biomeGated(String path, int weight, int quality, HolderGetter<Biome> biomes, TagKey<Biome> tag) {
         HolderSet<Biome> set = biomes.getOrThrow(tag);
-        return nested(path, weight).when(LocationCheck.checkLocation(
+        return nested(path, weight, quality).when(LocationCheck.checkLocation(
                 LocationPredicate.Builder.location().setBiomes(set)));
     }
 
-    private LootPoolEntryContainer.Builder<?> biomeGatedSingle(String path, int weight, HolderGetter<Biome> biomes, ResourceKey<Biome> biome) {
-        return biomeGated(path, weight, biomes, biome);
+    private LootPoolEntryContainer.Builder<?> biomeGatedSingle(String path, int weight, int quality, HolderGetter<Biome> biomes, ResourceKey<Biome> biome) {
+        return biomeGated(path, weight, quality, biomes, biome);
     }
 
-    private LootTable.Builder buildJunkTable() {
+    private LootTable.Builder buildJunkTable(HolderGetter<Biome> biomes) {
         LootPool.Builder pool = pool()
                 .add(LootItem.lootTableItem(Items.LILY_PAD).setWeight(17))
-                .add(LootItem.lootTableItem(Items.LEATHER).setWeight(10))
                 .add(LootItem.lootTableItem(Items.BONE).setWeight(10))
-                .add(LootItem.lootTableItem(Items.GLASS_BOTTLE).setWeight(10))
                 .add(LootItem.lootTableItem(Items.STRING).setWeight(5))
-                .add(LootItem.lootTableItem(Items.FISHING_ROD).setWeight(2))
                 .add(LootItem.lootTableItem(Items.BOWL).setWeight(10))
                 .add(LootItem.lootTableItem(Items.STICK).setWeight(5))
-                .add(LootItem.lootTableItem(Items.INK_SAC))
-                .add(LootItem.lootTableItem(Items.TRIPWIRE_HOOK).setWeight(10));
-
-        pool.add(LootItem.lootTableItem(FishItems.get(FishItems.AXOLOTL_ID)).setWeight(10));
+                .add(LootItem.lootTableItem(Items.TRIPWIRE_HOOK).setWeight(10))
+                .add(LootItem.lootTableItem(Items.ROTTEN_FLESH).setWeight(10))
+                .add(LootItem.lootTableItem(Items.WATER_BUCKET).setWeight(10))
+                .add(LootItem.lootTableItem(Items.GLASS_BOTTLE).setWeight(10))
+                .add(LootItem.lootTableItem(Items.EMERALD).setWeight(1))
+                // Damaged fishing rod
+                .add(LootItem.lootTableItem(Items.FISHING_ROD)
+                        .setWeight(2)
+                        .apply(SetItemDamageFunction.setDamage(UniformGenerator.between(0.0F, 0.9F))))
+                // Ink Sac x10
+                .add(LootItem.lootTableItem(Items.INK_SAC)
+                        .setWeight(1)
+                        .apply(SetItemCountFunction.setCount(ConstantValue.exactly(10))))
+                // Axolotl (weight reduced from 10 to 3)
+                .add(LootItem.lootTableItem(FishItems.get(FishItems.AXOLOTL_ID)).setWeight(3))
+                // Bamboo for jungle biomes only
+                .add(LootItem.lootTableItem(Items.BAMBOO)
+                        .setWeight(10)
+                        .when(LocationCheck.checkLocation(
+                                LocationPredicate.Builder.location()
+                                        .setBiomes(biomes.getOrThrow(LunaBytesFishingBiomeTagProvider.JUNGLE)))));
 
         return LootTable.lootTable().withPool(pool);
     }

@@ -26,6 +26,7 @@ public class LunaBytesFishingBiomeTagProvider extends FabricTagsProvider<Biome> 
     public static final TagKey<Biome> SALTWATER_HOT = create("saltwater_hot");
 
     public static final TagKey<Biome> SWAMPS = create("swamps");
+    public static final TagKey<Biome> JUNGLE = create("jungle");
 
     public LunaBytesFishingBiomeTagProvider(FabricPackOutput output, CompletableFuture<HolderLookup.Provider> registryLookupFuture) {
         super(output, Registries.BIOME, registryLookupFuture);
@@ -43,6 +44,9 @@ public class LunaBytesFishingBiomeTagProvider extends FabricTagsProvider<Biome> 
                 .add(Biomes.SNOWY_TAIGA)
                 .add(Biomes.SNOWY_BEACH)
                 .add(Biomes.ICE_SPIKES);
+
+        builder(JUNGLE)
+                .add(Biomes.JUNGLE);
 
         builder(FRESHWATER_COOL)
                 .add(Biomes.TAIGA)
