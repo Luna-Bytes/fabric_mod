@@ -18,6 +18,7 @@ import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
 import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.crafting.CookingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -95,7 +96,7 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
                         );
 
                         for (IngredientRef ingredient : shapeless.ingredients()) {
-                            addIngredient(builder, ingredient);
+                            addIngredient(builder, ingredient, items);
                         }
 
                         builder.unlockedBy(
@@ -119,7 +120,7 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
                         }
 
                         for (Map.Entry<Character, IngredientRef> entry : shaped.key().entrySet()) {
-                            addKey(builder, entry.getKey(), entry.getValue());
+                            addKey(builder, entry.getKey(), entry.getValue(), items);
                         }
 
                         builder.unlockedBy(
@@ -131,7 +132,7 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
                     }
 
                     case FoodRecipe.Cooking cooking -> {
-                        Ingredient ingredient = toVanillaIngredient(cooking.input());
+                        Ingredient ingredient = toVanillaIngredient(cooking.input(), items);
 
                         var builder = switch (cooking.type()) {
                             case SMELTING -> SimpleCookingRecipeBuilder.smelting(
@@ -170,28 +171,28 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
             // IngredientRef helpers
             // ------------------------------------------------------------------
 
-            private void addIngredient(ShapelessRecipeBuilder builder, IngredientRef ref) {
+            private void addIngredient(ShapelessRecipeBuilder builder, IngredientRef ref, HolderGetter<Item> items) {
                 switch (ref) {
                     case IngredientRef.OfItem ofItem ->
                             builder.requires(ofItem.item().get());
                     case IngredientRef.OfTag ofTag ->
-                            builder.requires(Ingredient.of());
+                            builder.requires(Ingredient.of(items.getOrThrow(ofTag.tag())));
                 }
             }
 
-            private void addKey(ShapedRecipeBuilder builder, char symbol, IngredientRef ref) {
+            private void addKey(ShapedRecipeBuilder builder, char symbol, IngredientRef ref, HolderGetter<Item> items) {
                 switch (ref) {
                     case IngredientRef.OfItem ofItem ->
                             builder.define(symbol, ofItem.item().get());
                     case IngredientRef.OfTag ofTag ->
-                            builder.define(symbol, Ingredient.of());
+                            builder.define(symbol, Ingredient.of(items.getOrThrow(ofTag.tag())));
                 }
             }
 
-            private Ingredient toVanillaIngredient(IngredientRef ref) {
+            private Ingredient toVanillaIngredient(IngredientRef ref, HolderGetter<Item> items) {
                 return switch (ref) {
                     case IngredientRef.OfItem ofItem -> Ingredient.of(ofItem.item().get());
-                    case IngredientRef.OfTag ofTag -> Ingredient.of();
+                    case IngredientRef.OfTag ofTag -> Ingredient.of(items.getOrThrow(ofTag.tag()));
                 };
             }
 
@@ -199,9 +200,6 @@ public class LunaBytesRecipeProvider extends FabricRecipeProvider {
                 return switch (ref) {
                     case IngredientRef.OfItem ofItem -> ofItem.item().get();
                     case IngredientRef.OfTag ofTag -> {
-                        // Tags can't be used directly in advancement triggers.
-                        // Return a representative item or null; Fabric's RecipeProvider
-                        // handles tag-based unlocks via has(TagKey) overload below.
                         throw new IllegalStateException(
                                 "Cannot use tag for advancement unlock. Use has(TagKey) instead."
                         );
