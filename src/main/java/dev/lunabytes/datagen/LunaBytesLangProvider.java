@@ -1,5 +1,7 @@
 package dev.lunabytes.datagen;
 
+import dev.lunabytes.fish.FishDefinition;
+import dev.lunabytes.fish.FishItems;
 import dev.lunabytes.food.FoodDefinition;
 
 import dev.lunabytes.food.FoodItems;
@@ -27,6 +29,12 @@ public class LunaBytesLangProvider extends FabricLanguageProvider {
         for (FoodDefinition def : FoodItems.DEFINITIONS) {
             translationBuilder.add("item.lunabytes." + def.id(), def.displayName());
         }
+
+        for (FishDefinition def : FishItems.DEFINITIONS) {
+            translationBuilder.add("item.lunabytes." + def.id(), def.displayName());
+        }
+
+        translationBuilder.add("item.lunabytes.axolotl", FishItems.AXOLOTL_DISPLAY_NAME);
     }
 
 }

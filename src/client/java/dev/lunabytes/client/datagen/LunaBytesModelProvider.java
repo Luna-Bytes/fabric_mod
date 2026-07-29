@@ -1,5 +1,7 @@
 package dev.lunabytes.client.datagen;
 
+import dev.lunabytes.fish.FishDefinition;
+import dev.lunabytes.fish.FishItems;
 import dev.lunabytes.food.FoodDefinition;
 import dev.lunabytes.food.FoodItems;
 
@@ -35,5 +37,19 @@ public class LunaBytesModelProvider extends FabricModelProvider {
                     ModelTemplates.FLAT_ITEM
             );
         }
+
+        for (FishDefinition def : FishItems.DEFINITIONS) {
+
+            itemModelGenerators.generateFlatItem(
+                    FishItems.get(def.id()),
+                    ModelTemplates.FLAT_ITEM
+            );
+        }
+
+        itemModelGenerators.generateFlatItem(
+                FishItems.get(FishItems.AXOLOTL_ID),
+                ModelTemplates.FLAT_ITEM
+        );
+
     }
 }

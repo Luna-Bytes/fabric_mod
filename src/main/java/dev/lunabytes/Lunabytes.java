@@ -1,5 +1,6 @@
 package dev.lunabytes;
 
+import dev.lunabytes.fish.FishItems;
 import dev.lunabytes.food.FoodItems;
 import net.fabricmc.api.ModInitializer;
 
@@ -24,6 +25,8 @@ public class Lunabytes implements ModInitializer {
 
 		FoodItems.registerAll();
 		LOGGER.info("Lunabytes Matcha Flavored Food & Armor: registered {} food items", FoodItems.all().size());
+		FishItems.registerAll();
+		LOGGER.info("Lunabytes Matcha Flavored Food & Armor: registered {} fish items", FishItems.all().size());
 	}
 
 	public static Identifier id(String path) {
