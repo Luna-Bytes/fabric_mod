@@ -192,9 +192,14 @@ public final class FoodItems {
 
         int halfHearts = Math.round(def.healHearts() * 2);
         StringBuilder hearts = new StringBuilder();
-        hearts.repeat("\u2764", Math.max(0, halfHearts));
-        loreLines.add(Component.literal(hearts.toString())
-                .withStyle(style -> style.withColor(0xFF0000).withItalic(false)));
+        hearts.repeat("❤", Math.max(0, halfHearts/2));
+        if (halfHearts % 2 == 1) {
+            hearts.append("❣");
+        }
+        if (halfHearts != 0) {
+            loreLines.add(Component.literal(hearts.toString())
+                    .withStyle(style -> style.withColor(0xFF0000).withItalic(false)));
+        }
 
         for (FoodEffect fx : def.effects()) {
             if (fx.isCleanse()) {
