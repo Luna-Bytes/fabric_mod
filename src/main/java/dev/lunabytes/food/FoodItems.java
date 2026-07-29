@@ -38,6 +38,7 @@ public final class FoodItems {
     // CONTENT LIST
     // ------------------------------------------------------------------
     public static final List<FoodDefinition> DEFINITIONS = List.of(
+            //region Ingredients
             FoodDefinition.withEffect(
                     "milk_bottle",
                     "Milk Bottle",
@@ -105,6 +106,8 @@ public final class FoodItems {
                             IngredientRef.item(Items.SUGAR)
                     ))
             ),
+            //endregion
+            //region Breads
             FoodDefinition.withEffect(
                     "bread",
                     "Bread",
@@ -134,6 +137,8 @@ public final class FoodItems {
                             FoodRecipe.Cooking.CookingType.SMOKING
                     )
             ),
+            //endregion
+            //region Baked Things
             FoodDefinition.withEffect(
                     "baked_apple",
                     "Baked Apple",
@@ -205,6 +210,7 @@ public final class FoodItems {
                             FoodRecipe.Cooking.CookingType.CAMPFIRE
                     )
             )
+            //endregion
 
     );
 
