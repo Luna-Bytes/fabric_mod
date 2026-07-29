@@ -133,6 +133,77 @@ public final class FoodItems {
                             100,
                             FoodRecipe.Cooking.CookingType.SMOKING
                     )
+            ),
+            FoodDefinition.withEffect(
+                    "baked_apple",
+                    "Baked Apple",
+                    2f,
+                    FoodEffect.always(MobEffects.REGENERATION,200,1),
+                    new FoodRecipe.Cooking(
+                            IngredientRef.item(Items.APPLE),
+                            0.35f,
+                            200,
+                            FoodRecipe.Cooking.CookingType.SMELTING
+                    ),
+                    new FoodRecipe.Cooking(
+                            IngredientRef.item(Items.APPLE),
+                            0.35f,
+                            200,
+                            FoodRecipe.Cooking.CookingType.CAMPFIRE
+                    )
+            ),
+            FoodDefinition.withEffect(
+                    "baked_golden_apple",
+                    "Baked Golden Apple",
+                    4f,
+                    FoodEffect.always(MobEffects.REGENERATION, 1200, 1),
+                    new FoodRecipe.Cooking(
+                            IngredientRef.item(Items.GOLDEN_APPLE),
+                            0.35f,
+                            200,
+                            FoodRecipe.Cooking.CookingType.SMELTING
+                    ),
+                    new FoodRecipe.Cooking(
+                            IngredientRef.item(Items.GOLDEN_APPLE),
+                            0.35f,
+                            200,
+                            FoodRecipe.Cooking.CookingType.CAMPFIRE
+                    )
+            ),
+            FoodDefinition.plain(
+                    "baked_potato",
+                    "Baked Potato",
+                    2.5f,
+                    new FoodRecipe.Cooking(
+                            IngredientRef.item(Items.POTATO),
+                            0.35f,
+                            200,
+                            FoodRecipe.Cooking.CookingType.SMELTING
+                    ),
+                    new FoodRecipe.Cooking(
+                            IngredientRef.item(Items.POTATO),
+                            0.35f,
+                            200,
+                            FoodRecipe.Cooking.CookingType.CAMPFIRE
+                    )
+            ),
+            FoodDefinition.withEffect(
+                    "baked_pumpkin",
+                    "Baked Pumpkin",
+                    1f,
+                    FoodEffect.always(MobEffects.RESISTANCE, 200, 1),
+                    new FoodRecipe.Cooking(
+                            IngredientRef.item(Items.PUMPKIN),
+                            0.35f,
+                            200,
+                            FoodRecipe.Cooking.CookingType.SMELTING
+                    ),
+                    new FoodRecipe.Cooking(
+                            IngredientRef.item(Items.PUMPKIN),
+                            0.35f,
+                            200,
+                            FoodRecipe.Cooking.CookingType.CAMPFIRE
+                    )
             )
 
     );
@@ -255,13 +326,13 @@ public final class FoodItems {
     }
 
     private static String getEffectIcon(net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect) {
-        if (effect == MobEffects.STRENGTH) return "\u2694";
-        if (effect == MobEffects.GLOWING) return "\u2728";
-        if (effect == MobEffects.REGENERATION) return "\u2764";
+        if (effect == MobEffects.STRENGTH) return "⚔";
+        if (effect == MobEffects.GLOWING) return "✨";
+        if (effect == MobEffects.REGENERATION) return "❤";
         if (effect == MobEffects.RESISTANCE) return "\uD83D\uDEE1";
-        if (effect == MobEffects.SPEED) return "\u26A1";
+        if (effect == MobEffects.SPEED) return "⚡";
         if (effect == MobEffects.FIRE_RESISTANCE) return "\uD83D\uDD25";
-        return "\u2022";
+        return "•";
     }
 
     private static int getEffectColor(net.minecraft.core.Holder<net.minecraft.world.effect.MobEffect> effect) {
