@@ -2,8 +2,10 @@ package dev.lunabytes.mixin;
 
 import dev.lunabytes.food.FoodDefinition;
 import dev.lunabytes.food.FoodItems;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,9 +26,12 @@ public abstract class EatingHealMixin {
         ItemStack stack = player.getUseItem();
 
         FoodDefinition def = FoodItems.getDefinition(stack.getItem());
+        FoodProperties food = stack.get(DataComponents.FOOD);
 
         if (def != null) {
             player.heal(def.healHearts() * 2.0F);
+        }else if (food != null) {
+            player.heal(food.saturation() / 2);
         }
     }
 }
