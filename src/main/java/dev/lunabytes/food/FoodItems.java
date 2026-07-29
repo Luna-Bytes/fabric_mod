@@ -227,8 +227,6 @@ public final class FoodItems {
                 );
     }
 
-    private FoodItems() {}
-
     public static FoodDefinition getDefinition(Item item) {
         return DEFINITIONS_BY_ITEM.get(item);
     }
