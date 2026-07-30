@@ -72,8 +72,8 @@ public final class FishItems {
             FishDefinition.of("anchovy", FishRarity.COMMON),
             FishDefinition.of("humpback_whitefish", FishRarity.COMMON),
             FishDefinition.of("alaska_blackfish", FishRarity.COMMON),
-            FishDefinition.of("blind_minnow", FishRarity.COMMON),
-            FishDefinition.of("blind_cave_fish", FishRarity.COMMON)
+            FishDefinition.of("blind_minnow", FishRarity.COMMON), // TODO: Missing Textures default cod for now
+            FishDefinition.of("blind_cave_fish", FishRarity.COMMON) // TODO: Missing Textures default cod for now
     );
 
     public static final List<FishDefinition> PUFFER_DEFINITIONS = List.of(
